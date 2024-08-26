@@ -1,0 +1,36 @@
+pkgbase = archiso-git
+	pkgdesc = Android application utilities.
+	pkgver = v71.r0.gf84a6994f092d86ba6b8f45aadbb1f07f4eb6208
+	pkgrel = 1
+	url = https://github.com/themartiancompany/archiso
+	arch = any
+	groups = hip
+	groups = hip-git
+	license = AGPL3
+	checkdepends = shellcheck
+	makedepends = make
+	makedepends = curl
+	makedepends = jq
+	depends = arch-install-scripts
+	depends = bash
+	depends = dosfstools
+	depends = e2fsprogs
+	depends = erofs-utils
+	depends = key-gen
+	depends = libarchive
+	depends = libcrash-bash
+	depends = libisoburn
+	depends = mtools
+	depends = cryptsetup
+	depends = squashfs-tools-ng
+	depends = tsu
+	optdepends = archiso-profiles: extra profiles for archiso
+	optdepends = edk2-ovmf: for emulating UEFI with run_archiso
+	optdepends = openssl: for codesigning support when building netboot artifacts
+	optdepends = qemu: for run_archiso
+	provides = archiso=v71.r0.gf84a6994f092d86ba6b8f45aadbb1f07f4eb6208
+	conflicts = archiso
+	source = archiso.tar.gz::https://github.com/themartiancompany/archiso/archive/refs/heads/raid.tar.gz
+	sha256sums = SKIP
+
+pkgname = archiso-git
