@@ -90,6 +90,7 @@ jobs:
         termux/termux-docker:${{ matrix.architecture }}
       volumes: 
         - /tmp/node20:/__e/node20
+        - /tmp/node20:/__e/node24
     # approximate environment variables for actions that can't be forced to use entrypoint.sh
     env:
       GH_TOKEN:
@@ -155,9 +156,15 @@ jobs:
           ln \
             -sf \
             "${PREFIX}/bin" \
-            "/__e/node20/bin"
+            "/__e/node20/bin" || \
+            true
+          ln \
+            -sf \
+            "${PREFIX}/bin" \
+            "/__e/node24/bin" || \
+            true
       - uses:
-          actions/checkout@v4.2.2
+          actions/checkout@v7.0.1
       - name:
           Fixes permissions of repository after actions/checkout, which ran as root user, while entrypoint.sh activates system user (1000).
         run: |
@@ -293,6 +300,8 @@ jobs:
           /entrypoint.sh \
             pacman-key \
               --init
+          /entrypoint.sh \
+            pacman-db-upgrade
       - name:
           Installs 'build essential' ahah.
         run: |
@@ -348,6 +357,7 @@ jobs:
             true
           /entrypoint.sh \
             rm \
+              -vrf \
               "${HOME}/fur/termux/any/"*".pkg.tar."*".sig"
           /entrypoint.sh \
             pacman \
@@ -753,7 +763,9 @@ jobs:
               "coreutils" || \
             true
       - uses:
-          actions/checkout@v4.2.2
+          actions/setup-node@v5
+      - uses:
+          actions/checkout@v7.0.1
       - name:
           Installs EVM Chains Info.
         run: |
@@ -1163,9 +1175,9 @@ jobs:
             ${{ github.event.release.upload_url }}
             # ${{ steps.create_release.outputs.upload_url }}
           asset_path:
-            "nodejs-bluebird-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
+            "archiso-git-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
           asset_name:
-            "dogeos-android-nodejs-bluebird-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
+            "dogeos-android-archiso-git-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
           asset_content_type:
             application/gzip
   arch_release:
@@ -1235,7 +1247,13 @@ jobs:
           ln \
             -sf \
             "${PREFIX}/bin" \
-            "/__e/node20/bin"
+            "/__e/node20/bin" || \
+            true
+          ln \
+            -sf \
+            "${PREFIX}/bin" \
+            "/__e/node24/bin" || \
+            true
       - name:
           Setups container.
         run: |
@@ -1252,7 +1270,9 @@ jobs:
             "tree" \
             "unzip"
       - uses:
-          actions/checkout@v4.2.2
+          actions/setup-node@v5
+      - uses:
+          actions/checkout@v7.0.1
       - name:
           Fixes executable bit for all binaries in "${PREFIX}/bin" for all users.
         run: |
@@ -1978,6 +1998,12 @@ jobs:
                 x86_64,
               arch:
                 x86_64 }
+          - { sys:
+                ucrt64,
+              env:
+                x86_64,
+              arch:
+                x86_64 }
     runs-on:
       windows-latest
     defaults:
@@ -1985,6 +2011,18 @@ jobs:
         shell:
           msys2 {0}
     steps:
+      - name:
+          _mingw_prefix
+        run: |
+          if [[ ${{ matrix.sys }} == "mingw64" ]]; then \
+            _mingw_prefix="mingw-w64-"; \
+          else if [[ ${{ matrix.sys }} == "ucrt64" ]]; then \
+            _mingw_prefix="mingw-ucrt64-"; \
+          fi; \
+          echo \
+            "::set-output name=_mingw_prefix::${_mingw_prefix}"
+        id:
+          _mingw_prefix
       - uses:
           msys2/setup-msys2@v2
         with:
@@ -1995,11 +2033,11 @@ jobs:
           install:
             base-devel
             dos2unix
-            mingw-w64-${{ matrix.env }}-github-cli
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-github-cli
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-jq
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-gcc
             git
-            mingw-w64-${{ matrix.env }}-jq
-            mingw-w64-${{ matrix.env }}-gcc
-            mingw-w64-${{ matrix.env }}-nodejs
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-nodejs
             python-docutils
             unzip
       - name:
@@ -2206,7 +2244,9 @@ jobs:
                 "core.autocrlf" \
                 "false"
       - uses:
-          actions/checkout@v3
+          actions/setup-node@v5
+      - uses:
+          actions/checkout@v7.0.1
       - name:
           Installs recent EVM GNUPG.
         env:
@@ -2216,7 +2256,7 @@ jobs:
           pacman \
             -S \
             --noconfirm \
-            "mingw-w64-${{ matrix.env }}-github-cli"
+            "${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-github-cli"
           bash \
             ".github/gur-mini" \
             "themartiancompany" \
@@ -2276,7 +2316,7 @@ jobs:
           #       "makedepends" > \
           #   "${HOME}/makedepends"
           for _pkg in $(cat "${HOME}/makedepends"); do \
-            _mingw_name="mingw-w64-${{ matrix.env }}-${_pkg}"; \
+            _mingw_name="${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-${_pkg}"; \
             export \
               _pkgs_mingw="${_pkgs_mingw} ${_mingw_name}"; \
             echo \
@@ -2495,9 +2535,9 @@ jobs:
             ${{ github.event.release.upload_url }}
             # ${{ steps.create_release.outputs.upload_url }}
           asset_path:
-            "nodejs-bluebird-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
+            "archiso-git-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
           asset_name:
-            "dogeos-windows-nodejs-bluebird-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
+            "dogeos-windows-archiso-git-${{ steps.version.outputs.version }}-any.pkg.tar.xz"
           asset_content_type:
             application/gzip
 
@@ -2539,7 +2579,9 @@ jobs:
               install \
                 "setuptools"
       - uses:
-          actions/checkout@v3.3.0
+          actions/setup-node@v5
+      - uses:
+          actions/checkout@v7.0.1
       - name:
           Builds the package.
         run:
