@@ -2011,18 +2011,6 @@ jobs:
         shell:
           msys2 {0}
     steps:
-      - name:
-          _mingw_prefix
-        run: |
-          if [[ ${{ matrix.sys }} == "mingw64" ]]; then \
-            _mingw_prefix="mingw-w64-"; \
-          else if [[ ${{ matrix.sys }} == "ucrt64" ]]; then \
-            _mingw_prefix="mingw-ucrt64-"; \
-          fi; \
-          echo \
-            "::set-output name=_mingw_prefix::${_mingw_prefix}"
-        id:
-          _mingw_prefix
       - uses:
           msys2/setup-msys2@v2
         with:
@@ -2033,19 +2021,64 @@ jobs:
           install:
             base-devel
             dos2unix
-            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-github-cli
-            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-jq
-            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-gcc
             git
-            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-nodejs
             python-docutils
             unzip
+      - name:
+          _mingw_prefix
+        run: |
+          bash \
+            -c \
+              'if [[ ${{ matrix.sys }} == "mingw64" ]]; then \
+                _mingw_prefix="mingw-w64-"; \
+               elif [[ ${{ matrix.sys }} == "ucrt64" ]]; then \
+                 _mingw_prefix="mingw-ucrt64-"; \
+               fi; \
+               echo \
+                 "::set-output name=_mingw_prefix::${_mingw_prefix}"'
+        id:
+          _mingw_prefix
       - name:
           Upgrade Arch environment.
         run: |
           pacman \
             -Syu \
             --noconfirm
+      - name:
+          Install build packages.
+        run: |
+          bash \
+            -c \
+              'bash \
+                 ".github/gur-mini" \
+                 "themartiancompany" \
+                 "github-cli" \
+                 "2.101.0-28"' || \
+          true
+          bash \
+            -c \
+              'bash \
+                 ".github/gur-mini" \
+                 "themartiancompany" \
+                 "github-jq" \
+                 "1.8.2-27"' || \
+          true
+          bash \
+            -c \
+              'bash \
+                 ".github/gur-mini" \
+                 "themartiancompany" \
+                 "gcc" \
+                 "1.8.2-27"' || \
+          true
+          pacman \
+            -S \
+            --noconfirm \
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-github-cli \
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-jq \
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-gcc \
+            ${{ steps._mingw_prefix.outputs._mingw_prefix }}${{ matrix.env }}-nodejs || \
+          true
       - name:
           Installs Crash Bash Library.
         run: |
