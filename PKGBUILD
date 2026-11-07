@@ -35,6 +35,9 @@
 _os="$(
   uname \
     -o)"
+if [[ ! -v "_git_service" ]]; then
+  _git_service="github"
+fi
 _git=false
 _local=false
 _proj="hip"
@@ -63,7 +66,7 @@ arch=(
 _http="https://${_git_service}.com"
 _local="${HOME}/${_pkg}"
 url="${_http}/${_ns}/${_pkg}"
-_gh_api="https://api.${_gh}/repos/${_ns}/${_pkgname}"
+_gh_api="https://api.${_git_service}/repos/${_ns}/${_pkg}"
 license=(
   "AGPL3"
 )
