@@ -51,8 +51,8 @@ pkgbase="${_pkg}"
 pkgname=(
   "${_pkg}-git"
 )
-pkgver="v71".r0.g"f84a6994f092d86ba6b8f45aadbb1f07f4eb6208"
-pkgrel=1
+pkgver="71".r0.g"f84a6994f092d86ba6b8f45aadbb1f07f4eb6208"
+pkgrel=2
 _pkgdesc=(
   "Android application utilities."
 )
